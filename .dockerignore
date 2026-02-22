@@ -1,0 +1,13 @@
+node_modules
+dist
+src
+*.ts
+tsconfig.json
+.git
+.gitignore
+.nano-banana-config.json
+.env
+*.md
+LICENSE
+.claude
+docs

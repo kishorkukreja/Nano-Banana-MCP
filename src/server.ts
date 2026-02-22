@@ -8,6 +8,7 @@ import {
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
+import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ConfigManager } from "./config.js";
 import { ChatSessionManager } from "./chat-session.js";
@@ -19,33 +20,46 @@ import { editImageTool, handleEditImage } from "./tools/edit.js";
 import { continueEditingTool, handleContinueEditing } from "./tools/continue.js";
 import { getLastImageInfoTool, handleGetLastImageInfo } from "./tools/info.js";
 
+export interface NanoBananaMCPOptions {
+  apiKey?: string;
+  isRemote?: boolean;
+}
+
 export class NanoBananaMCP {
   private server: Server;
   private configManager: ConfigManager;
   private chatSession: ChatSessionManager | null = null;
   private lastImagePath: string | null = null;
+  private isRemote: boolean;
+  private injectedApiKey: string | undefined;
 
-  constructor() {
+  constructor(options?: NanoBananaMCPOptions) {
+    this.isRemote = options?.isRemote ?? false;
+    this.injectedApiKey = options?.apiKey;
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "text2image-mcp", version: "2.0.0" },
+      { name: "text2image-mcp", version: "2.1.0" },
       { capabilities: { tools: {} } },
     );
     this.setupHandlers();
   }
 
   private setupHandlers(): void {
-    // List tools
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        configureGeminiTokenTool,
-        getConfigurationStatusTool,
+    // List tools — exclude config tools in remote mode
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      const tools = [
         generateImageTool,
         editImageTool,
         continueEditingTool,
         getLastImageInfoTool,
-      ],
-    }));
+      ];
+
+      if (!this.isRemote) {
+        tools.unshift(configureGeminiTokenTool, getConfigurationStatusTool);
+      }
+
+      return { tools };
+    });
 
     // Call tools
     this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest): Promise<CallToolResult> => {
@@ -64,12 +78,14 @@ export class NanoBananaMCP {
   private async routeToolCall(request: CallToolRequest): Promise<CallToolResult> {
     const { name } = request.params;
 
-    // Config tools don't need API key
-    if (name === "configure_gemini_token") {
-      return handleConfigureToken(request, this.configManager);
-    }
-    if (name === "get_configuration_status") {
-      return handleGetConfigStatus(this.configManager);
+    // Config tools don't need API key (local mode only)
+    if (!this.isRemote) {
+      if (name === "configure_gemini_token") {
+        return handleConfigureToken(request, this.configManager);
+      }
+      if (name === "get_configuration_status") {
+        return handleGetConfigStatus(this.configManager);
+      }
     }
 
     // All other tools need configured API
@@ -116,9 +132,17 @@ export class NanoBananaMCP {
     }
   }
 
-  async run(): Promise<void> {
-    await this.configManager.load();
-    const transport = new StdioServerTransport();
+  async connectTransport(transport: Transport): Promise<void> {
+    if (this.injectedApiKey) {
+      this.configManager.configureFromKey(this.injectedApiKey);
+    } else {
+      await this.configManager.load();
+    }
     await this.server.connect(transport);
+  }
+
+  async run(): Promise<void> {
+    const transport = new StdioServerTransport();
+    await this.connectTransport(transport);
   }
 }

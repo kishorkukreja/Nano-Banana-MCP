@@ -46,6 +46,13 @@ export class ConfigManager {
     }
   }
 
+  configureFromKey(apiKey: string): void {
+    ConfigSchema.parse({ geminiApiKey: apiKey });
+    this.config = { geminiApiKey: apiKey };
+    this.genAI = new GoogleGenAI({ apiKey });
+    this.configSource = "environment";
+  }
+
   async setApiKey(apiKey: string): Promise<void> {
     ConfigSchema.parse({ geminiApiKey: apiKey });
     this.config = { geminiApiKey: apiKey };

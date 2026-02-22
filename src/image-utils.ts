@@ -4,6 +4,10 @@ import path from "path";
 import os from "os";
 
 export function getImagesDirectory(): string {
+  if (process.env.IMAGE_OUTPUT_DIR) {
+    return process.env.IMAGE_OUTPUT_DIR;
+  }
+
   const platform = os.platform();
 
   if (platform === "win32") {

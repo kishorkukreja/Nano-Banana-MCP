@@ -159,6 +159,68 @@ npx text2image-mcp
 # This creates a local .nano-banana-config.json file
 ```
 
+## 🌐 Remote Server Mode
+
+Run text2image-mcp as an HTTP server so anyone can connect with their own Gemini API key — no local install needed.
+
+### Quick Start
+
+```bash
+# Install and build
+npm install && npm run build
+
+# Start the remote server (default port 3000)
+npm run start:remote
+
+# Or with a custom port
+PORT=8080 npm run start:remote
+```
+
+### Docker Deployment
+
+```bash
+# Build the image
+docker build -t text2image-mcp .
+
+# Run the container
+docker run -p 3000:3000 text2image-mcp
+```
+
+Deploy to any container platform (Railway, Render, Fly.io, etc.) by pointing to the Dockerfile.
+
+### Client Configuration
+
+Connect any MCP client using a URL and your Gemini API key as a Bearer token:
+
+```json
+{
+  "mcpServers": {
+    "text2image": {
+      "url": "https://your-server.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_GEMINI_API_KEY"
+      }
+    }
+  }
+}
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/mcp` | MCP JSON-RPC (initialize + tool calls) |
+| `GET` | `/mcp` | SSE stream for existing sessions |
+| `DELETE` | `/mcp` | Terminate a session |
+| `GET` | `/health` | Health check + active session count |
+
+### How It Works
+
+- **Auth**: Your Gemini API key is passed as `Authorization: Bearer <key>` — the server never stores it
+- **Sessions**: Each connection gets an isolated server instance with independent state (chat history, last image, etc.)
+- **Timeout**: Idle sessions are cleaned up after 30 minutes
+- **Tools**: Remote mode exposes 4 tools (`generate_image`, `edit_image`, `continue_editing`, `get_last_image_info`) — config tools are excluded since the API key comes from the auth header
+
 ## 🛠️ Available Commands
 
 ### `generate_image`

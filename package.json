@@ -1,11 +1,12 @@
 {
   "name": "text2image-mcp",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "MCP server for Google's Gemini image generation API (Flash + Pro) with cross-platform support",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "text2image-mcp": "dist/index.js"
+    "text2image-mcp": "dist/index.js",
+    "text2image-mcp-remote": "dist/remote.js"
   },
   "files": [
     "dist/",
@@ -15,7 +16,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:remote": "node dist/remote.js",
     "dev": "tsx src/index.ts",
+    "dev:remote": "tsx src/remote.ts",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
@@ -49,10 +52,14 @@
   "dependencies": {
     "@google/genai": "^1.16.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^5.0.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
