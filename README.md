@@ -55,7 +55,7 @@ Add this to your Claude Code MCP settings:
   "mcpServers": {
     "nano-banana": {
       "command": "npx",
-      "args": ["nano-banana-mcp"],
+      "args": ["text2image-mcp"],
       "env": {
         "GEMINI_API_KEY": "your-gemini-api-key-here"
       }
@@ -70,7 +70,7 @@ Add this to your Claude Code MCP settings:
   "mcpServers": {
     "nano-banana": {
       "command": "npx",
-      "args": ["nano-banana-mcp"]
+      "args": ["text2image-mcp"]
     }
   }
 }
@@ -104,7 +104,7 @@ Add to your Cursor MCP configuration:
 {
   "nano-banana": {
     "command": "npx",
-    "args": ["nano-banana-mcp"],
+    "args": ["text2image-mcp"],
     "env": {
       "GEMINI_API_KEY": "your-gemini-api-key-here"
     }
@@ -117,7 +117,7 @@ Add to your Cursor MCP configuration:
 {
   "nano-banana": {
     "command": "npx",
-    "args": ["nano-banana-mcp"]
+    "args": ["text2image-mcp"]
   }
 }
 ```
@@ -129,7 +129,7 @@ Add to your Cursor MCP configuration:
 
 ## 🔧 For Other MCP Clients
 
-If you're using a different MCP client, you can configure nano-banana-mcp using any of these methods:
+If you're using a different MCP client, you can configure text2image-mcp using any of these methods:
 
 ### Configuration Methods
 
@@ -138,7 +138,7 @@ If you're using a different MCP client, you can configure nano-banana-mcp using 
 {
   "nano-banana": {
     "command": "npx",
-    "args": ["nano-banana-mcp"],
+    "args": ["text2image-mcp"],
     "env": {
       "GEMINI_API_KEY": "your-gemini-api-key-here"
     }
@@ -149,12 +149,12 @@ If you're using a different MCP client, you can configure nano-banana-mcp using 
 **Method B: System Environment Variable**
 ```bash
 export GEMINI_API_KEY="your-gemini-api-key-here"
-npx nano-banana-mcp
+npx text2image-mcp
 ```
 
 **Method C: Using the Configure Tool**
 ```bash
-npx nano-banana-mcp
+npx text2image-mcp
 # The server will prompt you to configure when first used
 # This creates a local .nano-banana-config.json file
 ```

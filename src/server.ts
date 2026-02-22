@@ -28,7 +28,7 @@ export class NanoBananaMCP {
   constructor() {
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "nano-banana-mcp", version: "2.0.0" },
+      { name: "text2image-mcp", version: "2.0.0" },
       { capabilities: { tools: {} } },
     );
     this.setupHandlers();
