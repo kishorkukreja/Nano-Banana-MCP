@@ -4,8 +4,8 @@
 
 A Model Context Protocol (MCP) server that provides AI image generation and editing capabilities using Google's Gemini API. Supports both **Gemini 2.5 Flash** (fast, efficient) and **Gemini 3 Pro** (high quality, 4K, search grounding). Generate stunning images, edit existing ones, and iterate on your creations with simple text prompts.
 
-<a href="https://glama.ai/mcp/servers/@ConechoAI/Nano-Banana-MCP">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@ConechoAI/Nano-Banana-MCP/badge" alt="Nano-Banana-MCP MCP server" />
+<a href="https://glama.ai/mcp/servers/@kishorkukreja/Nano-Banana-MCP">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kishorkukreja/Nano-Banana-MCP/badge" alt="Nano-Banana-MCP MCP server" />
 </a>
 
 ## ✨ Features
@@ -306,7 +306,7 @@ This project was created with Claude Code and follows these technologies:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ConechoAI/Nano-Banana-MCP.git
+git clone https://github.com/kishorkukreja/Nano-Banana-MCP.git
 cd Nano-Banana-MCP
 
 # Install dependencies
@@ -350,9 +350,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
-- 🐛 **Issues**: [GitHub Issues](https://github.com/ConechoAI/Nano-Banana-MCP/issues)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/kishorkukreja/Nano-Banana-MCP/issues)
 - 📖 **Documentation**: This README and inline code comments
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/ConechoAI/Nano-Banana-MCP/discussions)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/kishorkukreja/Nano-Banana-MCP/discussions)
 
 ---
 
