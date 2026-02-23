@@ -28,6 +28,8 @@ import { getLastImageInfoTool, handleGetLastImageInfo } from "./tools/info.js";
 export interface NanoBananaMCPOptions {
   apiKey?: string;
   isRemote?: boolean;
+  /** Stable domain for the MCP App widget sandbox (derived from PUBLIC_URL). */
+  appDomain?: string;
 }
 
 const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
@@ -40,10 +42,12 @@ export class NanoBananaMCP {
   private lastImagePath: string | null = null;
   private isRemote: boolean;
   private injectedApiKey: string | undefined;
+  private appDomain: string | undefined;
 
   constructor(options?: NanoBananaMCPOptions) {
     this.isRemote = options?.isRemote ?? false;
     this.injectedApiKey = options?.apiKey;
+    this.appDomain = options?.appDomain;
     this.configManager = new ConfigManager();
     this.server = new Server(
       { name: "text2image-mcp", version: "2.3.0" },
@@ -91,6 +95,7 @@ export class NanoBananaMCP {
             name: "Image Viewer",
             description: "Interactive image viewer with zoom, pan, and metadata display",
             mimeType: MCP_APP_MIME_TYPE,
+            _meta: { ui: this.buildUiMeta() },
           },
         ],
       };
@@ -112,10 +117,22 @@ export class NanoBananaMCP {
             uri: IMAGE_VIEWER_RESOURCE_URI,
             mimeType: MCP_APP_MIME_TYPE,
             text: html,
+            _meta: { ui: this.buildUiMeta() },
           },
         ],
       };
     });
+  }
+
+  private buildUiMeta(): Record<string, unknown> {
+    const meta: Record<string, unknown> = {
+      // Self-contained HTML — no external network access needed
+      csp: {},
+    };
+    if (this.appDomain) {
+      meta.domain = this.appDomain;
+    }
+    return meta;
   }
 
   private resolveViewerPath(): string {

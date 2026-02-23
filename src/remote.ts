@@ -40,6 +40,19 @@ const PUBLIC_URL = process.env.PUBLIC_URL?.trim() || null;
 const oauthEnabled = PUBLIC_URL !== null;
 const oauthProvider = oauthEnabled ? new GeminiKeyOAuthProvider() : null;
 
+// Compute stable widget domain from PUBLIC_URL (host-independent identifier)
+function computeAppDomain(): string | undefined {
+  if (!PUBLIC_URL) return undefined;
+  try {
+    const hostname = new URL(PUBLIC_URL).hostname;
+    // Replace dots with dashes for a flat subdomain-style identifier
+    return hostname.replace(/\./g, "-");
+  } catch {
+    return undefined;
+  }
+}
+const appDomain = computeAppDomain();
+
 // --- Express app ---
 
 const app = express();
@@ -173,7 +186,7 @@ app.post("/mcp", authMiddleware, async (req, res) => {
   }
 
   // Create new session
-  const mcp = new NanoBananaMCP({ apiKey, isRemote: true });
+  const mcp = new NanoBananaMCP({ apiKey, isRemote: true, appDomain });
 
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
