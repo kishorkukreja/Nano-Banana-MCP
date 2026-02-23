@@ -50,7 +50,7 @@ export class NanoBananaMCP {
     this.appDomain = options?.appDomain;
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "text2image-mcp", version: "2.3.0" },
+      { name: "text2image-mcp", version: "2.4.0" },
       { capabilities: { tools: {}, resources: {} } },
     );
     this.setupHandlers();
