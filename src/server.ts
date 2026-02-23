@@ -31,6 +31,7 @@ export interface NanoBananaMCPOptions {
 }
 
 const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
+const MCP_APP_MIME_TYPE = "text/html;profile=mcp-app";
 
 export class NanoBananaMCP {
   private server: Server;
@@ -45,7 +46,7 @@ export class NanoBananaMCP {
     this.injectedApiKey = options?.apiKey;
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "text2image-mcp", version: "2.2.0" },
+      { name: "text2image-mcp", version: "2.2.1" },
       { capabilities: { tools: {}, resources: {} } },
     );
     this.setupHandlers();
@@ -89,7 +90,7 @@ export class NanoBananaMCP {
             uri: IMAGE_VIEWER_RESOURCE_URI,
             name: "Image Viewer",
             description: "Interactive image viewer with zoom, pan, and metadata display",
-            mimeType: "text/html",
+            mimeType: MCP_APP_MIME_TYPE,
           },
         ],
       };
@@ -109,7 +110,7 @@ export class NanoBananaMCP {
         contents: [
           {
             uri: IMAGE_VIEWER_RESOURCE_URI,
-            mimeType: "text/html",
+            mimeType: MCP_APP_MIME_TYPE,
             text: html,
           },
         ],

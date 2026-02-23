@@ -1,6 +1,6 @@
 {
   "name": "text2image-mcp",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "MCP server for Google's Gemini image generation API (Flash + Pro) with cross-platform support",
   "main": "dist/index.js",
   "type": "module",
