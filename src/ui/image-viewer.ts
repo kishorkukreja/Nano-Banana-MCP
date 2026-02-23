@@ -1,140 +1,16 @@
 import { App } from "@modelcontextprotocol/ext-apps";
 
 // --- DOM refs ---
-const img = document.getElementById("viewer-img") as HTMLImageElement;
 const placeholder = document.getElementById("placeholder")!;
-const metadataBar = document.getElementById("metadata")!;
-const zoomLabel = document.getElementById("zoom-level")!;
-const container = document.getElementById("image-container")!;
-
-// --- State ---
-let scale = 1;
-let translateX = 0;
-let translateY = 0;
-let isDragging = false;
-let dragStartX = 0;
-let dragStartY = 0;
-let lastTranslateX = 0;
-let lastTranslateY = 0;
-let imageDataUrl = "";
-
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 10;
-const ZOOM_STEP = 0.25;
+const contentEl = document.getElementById("content")!;
+const headerTitle = document.getElementById("header-title")!;
+const headerSubtitle = document.getElementById("header-subtitle")!;
+const statusBadge = document.getElementById("status-badge")!;
+const infoGrid = document.getElementById("info-grid")!;
+const filePathEl = document.getElementById("file-path")!;
+const filePathValue = document.getElementById("file-path-value")!;
 
 // --- Helpers ---
-
-function applyTransform() {
-  img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-  zoomLabel.textContent = `${Math.round(scale * 100)}%`;
-}
-
-function fitToView() {
-  scale = 1;
-  translateX = 0;
-  translateY = 0;
-  img.style.maxWidth = "100%";
-  img.style.maxHeight = "100%";
-  applyTransform();
-}
-
-function actualSize() {
-  img.style.maxWidth = "none";
-  img.style.maxHeight = "none";
-  scale = 1;
-  translateX = 0;
-  translateY = 0;
-  applyTransform();
-}
-
-function zoomBy(delta: number) {
-  scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale + delta));
-  applyTransform();
-}
-
-// --- Toolbar buttons ---
-document.getElementById("btn-zoom-in")!.addEventListener("click", () => zoomBy(ZOOM_STEP));
-document.getElementById("btn-zoom-out")!.addEventListener("click", () => zoomBy(-ZOOM_STEP));
-document.getElementById("btn-fit")!.addEventListener("click", fitToView);
-document.getElementById("btn-actual")!.addEventListener("click", actualSize);
-
-document.getElementById("btn-download")!.addEventListener("click", () => {
-  if (!imageDataUrl) return;
-  const a = document.createElement("a");
-  a.href = imageDataUrl;
-  a.download = `nano-banana-${Date.now()}.png`;
-  a.click();
-});
-
-// --- Pan via drag ---
-container.addEventListener("mousedown", (e) => {
-  if (e.button !== 0) return;
-  isDragging = true;
-  dragStartX = e.clientX;
-  dragStartY = e.clientY;
-  lastTranslateX = translateX;
-  lastTranslateY = translateY;
-  container.classList.add("dragging");
-});
-
-window.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
-  translateX = lastTranslateX + (e.clientX - dragStartX);
-  translateY = lastTranslateY + (e.clientY - dragStartY);
-  applyTransform();
-});
-
-window.addEventListener("mouseup", () => {
-  isDragging = false;
-  container.classList.remove("dragging");
-});
-
-// --- Zoom via scroll ---
-container.addEventListener("wheel", (e) => {
-  e.preventDefault();
-  const delta = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
-  zoomBy(delta);
-}, { passive: false });
-
-// --- Display image from tool result ---
-
-function showImage(base64: string, mimeType: string) {
-  imageDataUrl = `data:${mimeType};base64,${base64}`;
-  img.src = imageDataUrl;
-  img.classList.remove("hidden");
-  placeholder.classList.add("hidden");
-  fitToView();
-}
-
-function showMetadata(text: string) {
-  // Parse the status text for key-value pairs
-  const lines = text.split("\n").filter((l) => l.trim());
-  const tags: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    // Extract metadata lines like "Prompt: ...", "Aspect ratio: ...", etc.
-    if (trimmed.startsWith("Prompt:")) {
-      const val = trimmed.slice(7).trim().replace(/^"|"$/g, "");
-      tags.push(`<span class="tag"><strong>Prompt:</strong> ${escapeHtml(val)}</span>`);
-    } else if (trimmed.startsWith("Aspect ratio:")) {
-      tags.push(`<span class="tag"><strong>Aspect:</strong> ${escapeHtml(trimmed.slice(13).trim())}</span>`);
-    } else if (trimmed.startsWith("Resolution:")) {
-      tags.push(`<span class="tag"><strong>Res:</strong> ${escapeHtml(trimmed.slice(11).trim())}</span>`);
-    } else if (trimmed.startsWith("Image generated with") || trimmed.startsWith("Image edited with") || trimmed.startsWith("Image updated with")) {
-      // Extract model name from parentheses
-      const match = trimmed.match(/\(([^)]+)\)/);
-      if (match) {
-        tags.push(`<span class="tag"><strong>Model:</strong> ${escapeHtml(match[1])}</span>`);
-      }
-    }
-  }
-
-  if (tags.length > 0) {
-    metadataBar.innerHTML = tags.join("");
-    metadataBar.classList.remove("hidden");
-  }
-}
 
 function escapeHtml(s: string): string {
   const div = document.createElement("div");
@@ -142,9 +18,89 @@ function escapeHtml(s: string): string {
   return div.innerHTML;
 }
 
+function addInfoCard(label: string, value: string, fullWidth = false, accent = false) {
+  const card = document.createElement("div");
+  card.className = `info-card${fullWidth ? " full-width" : ""}`;
+  card.innerHTML = `
+    <div class="label">${escapeHtml(label)}</div>
+    <div class="value${accent ? " accent" : ""}">${escapeHtml(value)}</div>
+  `;
+  infoGrid.appendChild(card);
+}
+
+function parseAndDisplay(text: string) {
+  const lines = text.split("\n").filter((l) => l.trim());
+
+  let model = "";
+  let prompt = "";
+  let aspect = "";
+  let resolution = "";
+  let search = false;
+  let description = "";
+  let savedPath = "";
+  let action = "Generated"; // default
+
+  for (const line of lines) {
+    const t = line.trim();
+
+    if (t.startsWith("Image generated with")) {
+      action = "Generated";
+      const m = t.match(/\(([^)]+)\)/);
+      if (m) model = m[1];
+    } else if (t.startsWith("Image edited with")) {
+      action = "Edited";
+      const m = t.match(/\(([^)]+)\)/);
+      if (m) model = m[1];
+    } else if (t.startsWith("Image updated with")) {
+      action = "Updated";
+      const m = t.match(/\(([^)]+)\)/);
+      if (m) model = m[1];
+    } else if (t.startsWith("Prompt:") || t.startsWith("Edit prompt:")) {
+      prompt = t.replace(/^(Edit )?[Pp]rompt:\s*/, "").replace(/^"|"$/g, "");
+    } else if (t.startsWith("Aspect ratio:")) {
+      aspect = t.slice(13).trim();
+    } else if (t.startsWith("Resolution:")) {
+      resolution = t.slice(11).trim();
+    } else if (t.startsWith("Google Search grounding:")) {
+      search = t.includes("enabled");
+    } else if (t.startsWith("Description:")) {
+      description = t.slice(12).trim();
+    } else if (t.startsWith("Image saved to:") || t.startsWith("Edited image saved to:")) {
+      savedPath = t.replace(/^.*saved to:\s*/, "").trim();
+    }
+  }
+
+  // Header
+  headerTitle.textContent = `nano-banana`;
+  headerSubtitle.textContent = model || "Gemini";
+  statusBadge.textContent = action;
+
+  // Info cards
+  if (prompt) addInfoCard("Prompt", prompt, true);
+  if (model) addInfoCard("Model", model, false, true);
+  if (aspect) addInfoCard("Aspect Ratio", aspect);
+  if (resolution) addInfoCard("Resolution", resolution);
+  if (search) addInfoCard("Search Grounding", "Enabled");
+  if (description) addInfoCard("Description", description, true);
+
+  // File path
+  if (savedPath) {
+    filePathValue.textContent = savedPath;
+    filePathEl.classList.remove("hidden");
+  }
+
+  // Show content, hide placeholder
+  placeholder.classList.add("hidden");
+  contentEl.classList.remove("hidden");
+}
+
 // --- MCP App connection ---
 
-const app = new App({ name: "Image Viewer", version: "1.0.0" });
+const app = new App(
+  { name: "Image Viewer", version: "1.0.0" },
+  {},
+  { autoResize: true },
+);
 
 app.ontoolresult = (result) => {
   if (result.isError) {
@@ -154,19 +110,16 @@ app.ontoolresult = (result) => {
 
   const content = result.content ?? [];
 
-  // Find image content
+  // Find text content for metadata display
   for (const item of content) {
-    if ((item as any).type === "image" && (item as any).data) {
-      showImage((item as any).data, (item as any).mimeType || "image/png");
+    if ((item as any).type === "text" && (item as any).text) {
+      parseAndDisplay((item as any).text);
+      return;
     }
   }
 
-  // Find text content for metadata
-  for (const item of content) {
-    if ((item as any).type === "text" && (item as any).text) {
-      showMetadata((item as any).text);
-    }
-  }
+  // Fallback if no text content
+  placeholder.textContent = "No metadata available.";
 };
 
 app.connect();

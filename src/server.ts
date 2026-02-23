@@ -46,7 +46,7 @@ export class NanoBananaMCP {
     this.injectedApiKey = options?.apiKey;
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "text2image-mcp", version: "2.2.1" },
+      { name: "text2image-mcp", version: "2.2.2" },
       { capabilities: { tools: {}, resources: {} } },
     );
     this.setupHandlers();
