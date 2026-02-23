@@ -21,6 +21,8 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/*.test.ts"
+    "src/ui",
+    "**/*.test.ts",
+    "vite.config.ts"
   ]
 }

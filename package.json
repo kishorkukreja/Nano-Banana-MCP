@@ -1,6 +1,6 @@
 {
   "name": "text2image-mcp",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "MCP server for Google's Gemini image generation API (Flash + Pro) with cross-platform support",
   "main": "dist/index.js",
   "type": "module",
@@ -14,7 +14,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && vite build",
+    "build:ui": "vite build",
     "start": "node dist/index.js",
     "start:remote": "node dist/remote.js",
     "dev": "tsx src/index.ts",
@@ -51,6 +52,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.16.0",
+    "@modelcontextprotocol/ext-apps": "^1.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -65,6 +67,8 @@
     "@typescript-eslint/parser": "^6.19.0",
     "eslint": "^8.56.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vite": "^7.3.1",
+    "vite-plugin-singlefile": "^2.3.0"
   }
 }

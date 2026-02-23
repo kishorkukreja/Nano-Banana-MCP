@@ -7,10 +7,15 @@ import { MODELS, ASPECT_RATIOS, RESOLUTIONS, ModelKey, AspectRatio, Resolution }
 import { saveImageFromBase64 } from "../image-utils.js";
 import { ChatSessionManager } from "../chat-session.js";
 
+const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
+
 export const generateImageTool: Tool = {
   name: "generate_image",
   description:
     "Generate a NEW image from a text prompt. Supports model selection, aspect ratios, and resolution control. Use 'pro' model for higher quality, 4K resolution, and Google Search grounding.",
+  _meta: {
+    ui: { resourceUri: IMAGE_VIEWER_RESOURCE_URI },
+  },
   inputSchema: {
     type: "object",
     properties: {

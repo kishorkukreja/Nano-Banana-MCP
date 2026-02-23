@@ -6,10 +6,15 @@ import { GoogleGenAI } from "@google/genai";
 import { MODELS, ASPECT_RATIOS, RESOLUTIONS, ModelKey, AspectRatio, Resolution } from "../types.js";
 import { saveImageFromBase64, readImageAsBase64 } from "../image-utils.js";
 
+const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
+
 export const editImageTool: Tool = {
   name: "edit_image",
   description:
     "Edit a SPECIFIC existing image file with text prompts. Supports optional reference images, model selection, aspect ratios, and resolution.",
+  _meta: {
+    ui: { resourceUri: IMAGE_VIEWER_RESOURCE_URI },
+  },
   inputSchema: {
     type: "object",
     properties: {

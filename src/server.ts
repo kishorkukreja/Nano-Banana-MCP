@@ -3,6 +3,8 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
   CallToolRequest,
   CallToolResult,
   ErrorCode,
@@ -12,6 +14,9 @@ import { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ConfigManager } from "./config.js";
 import { ChatSessionManager } from "./chat-session.js";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Tool definitions & handlers
 import { configureGeminiTokenTool, getConfigurationStatusTool, handleConfigureToken, handleGetConfigStatus } from "./tools/config-tools.js";
@@ -24,6 +29,8 @@ export interface NanoBananaMCPOptions {
   apiKey?: string;
   isRemote?: boolean;
 }
+
+const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
 
 export class NanoBananaMCP {
   private server: Server;
@@ -38,8 +45,8 @@ export class NanoBananaMCP {
     this.injectedApiKey = options?.apiKey;
     this.configManager = new ConfigManager();
     this.server = new Server(
-      { name: "text2image-mcp", version: "2.1.0" },
-      { capabilities: { tools: {} } },
+      { name: "text2image-mcp", version: "2.2.0" },
+      { capabilities: { tools: {}, resources: {} } },
     );
     this.setupHandlers();
   }
@@ -73,6 +80,47 @@ export class NanoBananaMCP {
         );
       }
     });
+
+    // List resources — expose the image viewer UI
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      return {
+        resources: [
+          {
+            uri: IMAGE_VIEWER_RESOURCE_URI,
+            name: "Image Viewer",
+            description: "Interactive image viewer with zoom, pan, and metadata display",
+            mimeType: "text/html",
+          },
+        ],
+      };
+    });
+
+    // Read resource — return the bundled HTML file
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const { uri } = request.params;
+      if (uri !== IMAGE_VIEWER_RESOURCE_URI) {
+        throw new McpError(ErrorCode.InvalidRequest, `Unknown resource: ${uri}`);
+      }
+
+      const htmlPath = this.resolveViewerPath();
+      const html = await fs.readFile(htmlPath, "utf-8");
+
+      return {
+        contents: [
+          {
+            uri: IMAGE_VIEWER_RESOURCE_URI,
+            mimeType: "text/html",
+            text: html,
+          },
+        ],
+      };
+    });
+  }
+
+  private resolveViewerPath(): string {
+    // Resolve relative to the compiled JS location (dist/server.js → dist/ui/image-viewer.html)
+    const thisDir = path.dirname(fileURLToPath(import.meta.url));
+    return path.resolve(thisDir, "ui", "image-viewer.html");
   }
 
   private async routeToolCall(request: CallToolRequest): Promise<CallToolResult> {

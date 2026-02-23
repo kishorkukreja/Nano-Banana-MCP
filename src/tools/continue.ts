@@ -7,10 +7,15 @@ import { ASPECT_RATIOS, RESOLUTIONS, AspectRatio, Resolution } from "../types.js
 import { saveImageFromBase64, readImageAsBase64 } from "../image-utils.js";
 import { ChatSessionManager } from "../chat-session.js";
 
+const IMAGE_VIEWER_RESOURCE_URI = "ui://text2image/image-viewer.html";
+
 export const continueEditingTool: Tool = {
   name: "continue_editing",
   description:
     "Continue editing the LAST generated/edited image using multi-turn conversation. The model remembers previous context. Supports reference images, aspect ratio, and resolution changes.",
+  _meta: {
+    ui: { resourceUri: IMAGE_VIEWER_RESOURCE_URI },
+  },
   inputSchema: {
     type: "object",
     properties: {
