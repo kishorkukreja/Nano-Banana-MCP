@@ -42,7 +42,14 @@ app.get("/health", (_req, res) => {
 
 // --- MCP endpoint ---
 
-function extractApiKey(req: express.Request): string | null {
+// API key resolution: env var takes priority, then Bearer token from client
+const SERVER_API_KEY = process.env.GEMINI_API_KEY?.trim() || null;
+
+function resolveApiKey(req: express.Request): string | null {
+  // Server-side env var — used for hosted deployments (Railway, etc.)
+  if (SERVER_API_KEY) return SERVER_API_KEY;
+
+  // Client-provided Bearer token — used for multi-tenant setups
   const auth = req.headers.authorization;
   if (!auth?.startsWith("Bearer ")) return null;
   return auth.slice(7).trim() || null;
@@ -58,9 +65,9 @@ function isInitializeRequest(body: unknown): boolean {
 }
 
 app.post("/mcp", async (req, res) => {
-  const apiKey = extractApiKey(req);
+  const apiKey = resolveApiKey(req);
   if (!apiKey) {
-    res.status(401).json({ error: "Missing Authorization: Bearer <GEMINI_API_KEY>" });
+    res.status(401).json({ error: "Missing API key. Set GEMINI_API_KEY env var on server, or send Authorization: Bearer <key>." });
     return;
   }
 
